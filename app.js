@@ -272,7 +272,7 @@ app.post('/designChapter', async (req, res) => {
       const newChapter = await Chapters.create({
         title: req.body.chapterName,
         description: req.body.description,
-        pages: parseInt(req.body.pages, 10),
+        pages: req.body.pages,
         name: tutor ? tutor.name : 'Unknown',
         email: tutoremail,
         courseId: course.id,
