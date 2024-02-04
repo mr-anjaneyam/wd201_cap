@@ -15,7 +15,7 @@ module.exports = (sequelize, DataTypes) => {
       {
         title: DataTypes.STRING,
         description: DataTypes.STRING,
-        pages: DataTypes.ARRAY(DataTypes.TEXT),
+        pages: DataTypes.INTEGER,
         name: DataTypes.STRING,
         email: DataTypes.STRING,
         courseId: DataTypes.INTEGER,

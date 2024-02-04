@@ -16,7 +16,7 @@ module.exports = {
         type: Sequelize.STRING,
       },
       pages: {
-        type: Sequelize.ARRAY(Sequelize.TEXT),
+        type: Sequelize.INTEGER,
       },
       name: {
         type: Sequelize.STRING,
