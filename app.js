@@ -292,7 +292,7 @@ app.post('/designChapter', async (req, res) => {
 });
 
 
-app.get('/enrolled', async (req, res)=>{
+app.get('/coursesenrolled', async (req, res)=>{
   const email = req.session.email;
   const user = await Users.findOne({where: {email: email}});
 
@@ -304,7 +304,7 @@ app.get('/enrolled', async (req, res)=>{
     }
     console.log(enrolledCourses);
 
-    res.render('enrolled', {courses: enrolledCourses});
+    res.render('coursesenrolled', {courses: enrolledCourses});
   } else {
     console.error('Error fetching tutor\'s courses:', error);
     res.status(500).send('Internal Server Error');
@@ -444,12 +444,12 @@ app.get('/viewCourseU', async (req, res)=>{
 });
 
 
-app.get('/changepassword', (req, res)=>{
-  res.render('changepassword');
+app.get('/chpwd', (req, res)=>{
+  res.render('chpwd');
 });
 
 
-app.post('/changepassword', async (req, res)=>{
+app.post('/chpwd', async (req, res)=>{
   const email = req.session.email;
   const user = await Users.findOne({where: {email: email}});
   console.log(req.body);
@@ -457,7 +457,7 @@ app.post('/changepassword', async (req, res)=>{
     const updatedUser = user.update({password: req.body.newpassword});
     console.log(updatedUser);
   } else {
-    res.redirect('/changepassword');
+    res.redirect('/chpwd');
   }
   if (user) {
     req.session.email = req.body.email;
