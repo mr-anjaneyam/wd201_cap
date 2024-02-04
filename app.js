@@ -1,11 +1,13 @@
 /* eslint-disable linebreak-style */
 const express = require('express');
 const session = require('express-session');
+const cookieParser = require('cookie-parser')
 const app = express();
 const path = require('path');
 const Sequelize = require('sequelize');
 const bodyParser = require('body-parser');
 const {Users, Courses, Chapters} = require('./models/');
+const {DataTypes} = require('sequelize');
 const users = require('./models/users');
 
 
@@ -18,9 +20,11 @@ app.use(bodyParser.urlencoded({extended: true}));
 app.get('/', (request, response) => {
   response.render('index');
 });
+app.use(cookieParser());
+
 app.use(
     session({
-      secret: 'this_is_a_super_secret_key',
+      secret: '81i4rgwjdsbjhbacow8172UG&QW*',
       resave: false,
       saveUninitialized: true,
     }),
@@ -233,10 +237,16 @@ app.get('/designChapter', (req, res) => {
 
 app.post('/designChapter', async (req, res) => {
   try {
+    if (!req.session.email) {
+      console.log('Session:', req.session); // Log the entire session for debugging
+      return res.status(400).send('Tutor email not found in the session');
+    }
     const tutoremail = req.session.email;
-    const courseName = req.body.coursename||req.query.name;
+    const courseName = req.body.coursename || req.query.name;
 
     console.log('Request Body:', req.body);
+
+    const pages = parseInt(req.body.pages, 10);
 
     const course = await Courses.findOne({
       where: {
@@ -259,11 +269,10 @@ app.post('/designChapter', async (req, res) => {
         },
       });
 
-
       const newChapter = await Chapters.create({
         title: req.body.chapterName,
         description: req.body.description,
-        pages: [],
+        pages: parseInt(req.body.pages, 10),
         name: tutor ? tutor.name : 'Unknown',
         email: tutoremail,
         courseId: course.id,
@@ -281,6 +290,7 @@ app.post('/designChapter', async (req, res) => {
     res.status(500).send('Internal Server Error');
   }
 });
+
 
 app.get('/enrolled', async (req, res)=>{
   const email = req.session.email;

@@ -1,7 +1,7 @@
 const app = require("./app");
 
-PORT = 4000;
+PORT = 3000;
 
 app.listen(PORT, () => {
-  console.log(`Express server started at http://localhost:${PORT}`);
+  console.log('Express server started at port 3000');
 });
