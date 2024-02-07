@@ -167,8 +167,9 @@ app.get('/viewChapter', async (req, res) => {
     console.log(req.query);
     const userEmail = req.session.email;
     const chapterName = req.query.chapterName;
-    const courseId = convertToInteger(req.body.courseId);
+    const courseId = parseInt(req.query.courseId);
     console.log("CourseID in viewchapter");
+
     console.log(typeof courseId);
 
     console.log(userEmail, chapterName, courseId);
@@ -283,7 +284,7 @@ app.post('/designChapter', async (req, res) => {
 
       req.session.courseId = newChapter.courseId;
       req.session.title = newChapter.title;
-      res.redirect(`/designPage/createPage?chapterName=${newChapter.title}`);
+      res.redirect(`/viewChapter?chapterName=${newChapter.title}`);
     } else {
       res.status(404).send('Course not found');
     }
@@ -373,7 +374,7 @@ app.get('/designPage', (req, res) => {
   console.log(req.session);
   try {
     console.log(req.query);
-    const courseId = convertToInteger(req.body.courseId);
+    const courseId = parseInt(req.query.courseId);
     const title = req.query.chapterName;
 
     res.render('designPage', { courseId: courseId, title: title });
@@ -386,7 +387,7 @@ app.get('/designPage', (req, res) => {
 app.post('/designPage', async (req, res) => {
   console.log(req.body);
   const chapterName = req.body.Chapter;
-  const courseId = convertToInteger(req.body.courseId);
+  const courseId = parseInt(req.body.courseId);
   console.log("CourseID in designpage")
   console.log(typeof courseId);
 
@@ -419,43 +420,13 @@ app.post('/designPage', async (req, res) => {
   res.redirect(`/viewChapter/?chapterName=${chapterName}&courseId=${courseId}`);
 });
 
-app.post('/designPage/createPage', async (req, res) => {
-  console.log(req.body);
-  const chapterName = req.body.chapter;
-  const courseId = convertToInteger(req.body.courseId);
-  const page = req.body.Page;
-  const editorContent = req.body.editorContent;
-
-  const chapter = await Chapters.findOne({
-    where: {
-      title: chapterName,
-      courseId: courseId,
-    },
-  });
-
-  if (!chapter) {
-    return res.status(404).send('Chapter not found');
-  }
-
-  const newPage = await Pages.create({
-    head: page,
-    body: JSON.stringify(editorContent),
-    completed: false,
-    chapterId: chapter.id,
-  });
-
-  console.log('New page created:', newPage.toJSON());
-
-  res.redirect(`/viewChapter/?chapterName=${chapterName}&courseId=${courseId}`);
-});
-
 app.get('/viewPage', (req, res) => {
   console.log(req.query);
   const pageHead = req.query.head;
   const pageBody = req.query.body;
   const pageCompleted = req.query.completed;
   const chapter = req.query.chapter;
-  const courseId = convertToInteger(req.body.courseId);
+  const courseId = parseInt(req.query.courseId);
   console.log("CourseID in viewpage");
   console.log(typeof courseId);
 
@@ -521,7 +492,7 @@ app.post('/chpwd', async (req, res) => {
 app.get('/viewChapterU', async (req, res) => {
   try {
     const chapterName = req.query.chapterName;
-    const courseId = convertToInteger(req.body.courseId);
+    const courseId = parseInt(req.query.courseId);
     console.log("CourseID in viewchapterU");
     console.log(typeof courseId);
 
@@ -561,7 +532,7 @@ app.get('/viewChapterU', async (req, res) => {
 app.post('/updatePage', async (req, res) => {
   console.log(req.body);
   const chapterName = req.body.chapter;
-  const courseId = req.body.courseId.trim();
+  const courseId = req.query.courseId.trim();
   console.log("CourseID in updatepage");
   console.log(typeof courseId);
 
@@ -594,7 +565,7 @@ app.post('/updatePage', async (req, res) => {
 
 app.post('/enrollCourse', async (req, res) => {
   try {
-    const courseId = convertToInteger(req.body.courseId);
+    const courseId = parseInt(req.query.courseId);
     const course = await Courses.findOne({ where: { id: courseId } });
     const email = req.session.email;
     const user = await Users.findOne({ where: { email: email } });
@@ -612,16 +583,5 @@ app.post('/enrollCourse', async (req, res) => {
     res.status(500).send('Internal Server Error');
   }
 });
-
-function convertToInteger(courseId) {
-  return courseId;
-  // const courseIdInteger = parseInt(courseId, 10);
-  // if (!isNaN(courseIdInteger)) {
-  //   return courseIdInteger;
-  // } else {
-  //   console.error('Conversion failed. Input is not a valid integer string.');
-  //   return courseId;
-  // }
-}
 
 module.exports = app;
