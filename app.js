@@ -167,7 +167,9 @@ app.get('/viewChapter', async (req, res) => {
     console.log(req.query);
     const userEmail = req.session.email;
     const chapterName = req.query.chapterName;
-    const courseId = req.query.courseId;
+    const courseId = convertToInteger(req.body.courseId);
+    console.log("CourseID in viewchapter");
+    console.log(typeof courseId);
 
     console.log(userEmail, chapterName, courseId);
 
@@ -367,12 +369,11 @@ app.post('/signout', (req, res) => {
   });
 });
 
-app.get('/designPage', async (req, res) => {
+app.get('/designPage', (req, res) => {
   console.log(req.session);
   try {
     console.log(req.query);
-    const courseId = req.session.courseId || req.body.courseId ||
-      req.query.courseId;
+    const courseId = convertToInteger(req.body.courseId);
     const title = req.query.chapterName;
 
     res.render('designPage', { courseId: courseId, title: title });
@@ -385,7 +386,10 @@ app.get('/designPage', async (req, res) => {
 app.post('/designPage', async (req, res) => {
   console.log(req.body);
   const chapterName = req.body.Chapter;
-  const courseId = req.session.courseId || req.body.courseId;
+  const courseId = convertToInteger(req.body.courseId);
+  console.log("CourseID in designpage")
+  console.log(typeof courseId);
+
   const page = req.body.Page;
   const editorContent = req.body.editorContent;
 
@@ -401,7 +405,7 @@ app.post('/designPage', async (req, res) => {
   const updatedChapter = await chapter.update({
     pages: chapter.pages.concat([{
       head: page,
-      body: JSON.stringify(editorContent), // Convert to JSON string
+      body: JSON.stringify(editorContent),
       completed: false
     }])
   });
@@ -418,7 +422,7 @@ app.post('/designPage', async (req, res) => {
 app.post('/designPage/createPage', async (req, res) => {
   console.log(req.body);
   const chapterName = req.body.chapter;
-  const courseId = req.session.courseId || req.body.courseId;
+  const courseId = convertToInteger(req.body.courseId);
   const page = req.body.Page;
   const editorContent = req.body.editorContent;
 
@@ -451,7 +455,9 @@ app.get('/viewPage', (req, res) => {
   const pageBody = req.query.body;
   const pageCompleted = req.query.completed;
   const chapter = req.query.chapter;
-  const courseId = req.query.courseId;
+  const courseId = convertToInteger(req.body.courseId);
+  console.log("CourseID in viewpage");
+  console.log(typeof courseId);
 
   res.render('viewPage',
     {
@@ -515,7 +521,9 @@ app.post('/chpwd', async (req, res) => {
 app.get('/viewChapterU', async (req, res) => {
   try {
     const chapterName = req.query.chapterName;
-    const courseId = req.query.courseId;
+    const courseId = convertToInteger(req.body.courseId);
+    console.log("CourseID in viewchapterU");
+    console.log(typeof courseId);
 
     console.log(chapterName, courseId);
 
@@ -554,6 +562,9 @@ app.post('/updatePage', async (req, res) => {
   console.log(req.body);
   const chapterName = req.body.chapter;
   const courseId = req.body.courseId.trim();
+  console.log("CourseID in updatepage");
+  console.log(typeof courseId);
+
   const chapter = await Chapters.findOne(
     { where: { title: chapterName, courseId: courseId } });
   console.log(chapter);
@@ -583,7 +594,7 @@ app.post('/updatePage', async (req, res) => {
 
 app.post('/enrollCourse', async (req, res) => {
   try {
-    const courseId = req.body.courseId;
+    const courseId = convertToInteger(req.body.courseId);
     const course = await Courses.findOne({ where: { id: courseId } });
     const email = req.session.email;
     const user = await Users.findOne({ where: { email: email } });
@@ -601,4 +612,16 @@ app.post('/enrollCourse', async (req, res) => {
     res.status(500).send('Internal Server Error');
   }
 });
+
+function convertToInteger(courseId) {
+  return courseId;
+  // const courseIdInteger = parseInt(courseId, 10);
+  // if (!isNaN(courseIdInteger)) {
+  //   return courseIdInteger;
+  // } else {
+  //   console.error('Conversion failed. Input is not a valid integer string.');
+  //   return courseId;
+  // }
+}
+
 module.exports = app;
