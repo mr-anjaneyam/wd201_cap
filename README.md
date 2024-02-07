@@ -1,5 +1,7 @@
-# Learning Management System (LMS) Project
+# Learning Management System (LMS) 
 
+<img src="home.png"  width=60% height=60%>
+<br>
 This project is a Learning Management System (LMS) designed to facilitate online courses, chapters, and user management.
 
 ## Table of Contents
