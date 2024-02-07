@@ -14,7 +14,6 @@ This project is a Learning Management System (LMS) designed to facilitate online
   - [Usage](#usage)
   - [Contributing](#contributing)
   - [License](#license)
-  - [Acknowledgements](#acknowledgements)
 
 ## Description
 
