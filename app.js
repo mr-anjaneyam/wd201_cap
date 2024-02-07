@@ -6,9 +6,8 @@ const app = express();
 const path = require('path');
 const Sequelize = require('sequelize');
 const bodyParser = require('body-parser');
-const { Users, Courses, Chapters } = require('./models/');
+const { Users, Courses, Chapters, Pages } = require('./models/');
 const { DataTypes } = require('sequelize');
-const users = require('./models/users');
 
 app.use(cookieParser());
 app.use(
@@ -42,7 +41,7 @@ app.post('/login', async (req, res) => {
         role: req.body.role,
       },
     });
-    
+
     if (user) {
       req.session.email = req.body.email;
       if (user.role === 'tutor') {
@@ -177,17 +176,20 @@ app.get('/viewChapter', async (req, res) => {
         title: chapterName,
         courseId: courseId,
       },
+      include: Pages,
     });
 
-    if (!Array.isArray(chapter.pages)) {
+    if (!chapter) {
       return res.status(404).send('Chapter not found');
     }
-    const pages = Array.isArray(chapter.pages) ? chapter.pages.map((pageString) => JSON.parse(pageString)) : [];
+
+    const pages = chapter.Pages.map((page) => page.toJSON());
+    const page = req.body.Page;
     console.log(pages);
 
     res.render('viewChapter', {
       name: chapter.title,
-      page: pages,
+      pages: pages,
       courseId: courseId,
     });
   } catch (error) {
@@ -270,7 +272,6 @@ app.post('/designChapter', async (req, res) => {
       const newChapter = await Chapters.create({
         title: req.body.chapterName,
         description: req.body.description,
-        pages: [],
         name: tutor ? tutor.name : 'Unknown',
         email: tutoremail,
         courseId: course.id,
@@ -280,7 +281,7 @@ app.post('/designChapter', async (req, res) => {
 
       req.session.courseId = newChapter.courseId;
       req.session.title = newChapter.title;
-      res.redirect(`/designPage/?chapterName=${newChapter.title}`);
+      res.redirect(`/designPage/createPage?chapterName=${newChapter.title}`);
     } else {
       res.status(404).send('Course not found');
     }
@@ -398,13 +399,48 @@ app.post('/designPage', async (req, res) => {
     return res.status(404).send('Chapter not found');
   }
   const updatedChapter = await chapter.update({
-    pages: chapter.pages.concat([{ head: page, body: editorContent, completed: false }]),
-  });  
+    pages: chapter.pages.concat([{
+      head: page,
+      body: JSON.stringify(editorContent), // Convert to JSON string
+      completed: false
+    }])
+  });
+
 
   console.log('Chapter updated:', updatedChapter.toJSON());
 
   console.log('Chapter:', chapter);
   console.log('Editor Content:', editorContent);
+
+  res.redirect(`/viewChapter/?chapterName=${chapterName}&courseId=${courseId}`);
+});
+
+app.post('/designPage/createPage', async (req, res) => {
+  console.log(req.body);
+  const chapterName = req.body.chapter;
+  const courseId = req.session.courseId || req.body.courseId;
+  const page = req.body.Page;
+  const editorContent = req.body.editorContent;
+
+  const chapter = await Chapters.findOne({
+    where: {
+      title: chapterName,
+      courseId: courseId,
+    },
+  });
+
+  if (!chapter) {
+    return res.status(404).send('Chapter not found');
+  }
+
+  const newPage = await Pages.create({
+    head: page,
+    body: JSON.stringify(editorContent),
+    completed: false,
+    chapterId: chapter.id,
+  });
+
+  console.log('New page created:', newPage.toJSON());
 
   res.redirect(`/viewChapter/?chapterName=${chapterName}&courseId=${courseId}`);
 });
@@ -493,7 +529,13 @@ app.get('/viewChapterU', async (req, res) => {
     if (!Array.isArray(chapter.pages)) {
       return res.status(404).send('Chapter not found');
     }
-    const pages = chapter.pages.map((pageString) => JSON.parse(pageString));
+    // const pages = chapter.pages.map((pageString) => JSON.parse(pageString));
+
+    const pages = chapter.pages.map((pageString, index) => {
+      console.log(`Processing page ${index + 1}:`, pageString);
+    });
+
+
 
     console.log(pages);
 
