@@ -19,7 +19,7 @@
 
         <ul id="pagesList" class="space-y-4">
             <% if (page && Array.isArray(page)) {
-                page.forEach((p) => { %>
+                pages.forEach((p) => { %>
                     <li>
                         <div class="flex items-center py-2 px-4 bg-white rounded-lg shadow-md hover:bg-purple-50">
                             <form action="/viewPage" method="get" class="flex items-center">
