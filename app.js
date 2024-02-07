@@ -10,6 +10,14 @@ const {Users, Courses, Chapters} = require('./models/');
 const {DataTypes} = require('sequelize');
 const users = require('./models/users');
 
+app.use(cookieParser());
+app.use(
+    session({
+      secret: '81i4rgwjdsbjhbacow8172UG&QWqoe98yuwf',
+      resave: false,
+      saveUninitialized: true,
+    }),
+);
 
 app.set('view engine', 'ejs');
 app.use(express.static(path.join(__dirname, 'views')));
@@ -20,15 +28,6 @@ app.use(bodyParser.urlencoded({extended: true}));
 app.get('/', (request, response) => {
   response.render('index');
 });
-app.use(cookieParser());
-
-app.use(
-    session({
-      secret: '81i4rgwjdsbjhbacow8172UG&QW*',
-      resave: false,
-      saveUninitialized: true,
-    }),
-);
 
 app.get('/login', (req, res)=>{
   res.render('login');
@@ -87,13 +86,12 @@ app.post('/signup', async (req, res) => {
 });
 
 app.get('/tutor', async (req, res) => {
-  console.log(req.session);
-  const tutoremail = req.session.email;
   try {
+    const tutoremail = req.session.email;
     const courses = await Courses.findAll();
-    res.render('tutor', {courses, tutoremail});
+    res.render('tutor', { courses, tutoremail });
   } catch (error) {
-    res.render('tutor', {courses: null, tutoremail});
+    res.render('tutor', { courses: null, tutoremail });
   }
 });
 
@@ -181,11 +179,10 @@ app.get('/viewChapter', async (req, res)=>{
       },
     });
 
-    if (!chapter) {
+    if (!Array.isArray(chapter.pages)) {
       return res.status(404).send('Chapter not found');
     }
-    const pages = chapter.pages.map((pageString) => JSON.parse(pageString));
-
+    const pages = Array.isArray(chapter.pages) ? chapter.pages.map((pageString) => JSON.parse(pageString)) : [];
     console.log(pages);
 
     res.render('viewChapter', {
@@ -238,9 +235,10 @@ app.get('/designChapter', (req, res) => {
 app.post('/designChapter', async (req, res) => {
   try {
     if (!req.session.email) {
-      console.log('Session:', req.session); // Log the entire session for debugging
+      console.log('Session:', req.session);
       return res.status(400).send('Tutor email not found in the session');
     }
+
     const tutoremail = req.session.email;
     const courseName = req.body.coursename || req.query.name;
 
@@ -254,7 +252,7 @@ app.post('/designChapter', async (req, res) => {
         email: tutoremail,
       },
     });
-
+    console.log(req.body);
     console.log('Found Course:', course);
 
     if (course) {
@@ -272,11 +270,12 @@ app.post('/designChapter', async (req, res) => {
       const newChapter = await Chapters.create({
         title: req.body.chapterName,
         description: req.body.description,
-        pages: req.body.pages,
+        pages: [],
         name: tutor ? tutor.name : 'Unknown',
         email: tutoremail,
         courseId: course.id,
       });
+
       console.log('New chapter created:', newChapter.toJSON());
 
       req.session.courseId = newChapter.courseId;
@@ -389,13 +388,13 @@ app.post('/designPage', async (req, res) => {
   const page = req.body.Page;
   const editorContent = req.body.editorContent;
 
-  const chapter = await Chapters.findOne({
+  const chapter = await Chapters.findAll({
     where: {
       title: chapterName,
       courseId: courseId,
     },
   });
-  if (!chapter) {
+  if (!Array.isArray(chapter.pages)) {
     return res.status(404).send('Chapter not found');
   }
   const updatedChapter = await chapter.update({
@@ -487,7 +486,7 @@ app.get('/viewChapterU', async (req, res)=>{
       },
     });
 
-    if (!chapter) {
+    if (!Array.isArray(chapter.pages)) {
       return res.status(404).send('Chapter not found');
     }
     const pages = chapter.pages.map((pageString) => JSON.parse(pageString));

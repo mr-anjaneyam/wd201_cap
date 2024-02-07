@@ -8,6 +8,7 @@ module.exports = (sequelize, DataTypes) => {
         foreignKey: 'courseId',
         allowNull: false,
       });
+      Chapters.hasMany(models.Pages, { foreignKey: 'chapterId' });
     }
   }
 
@@ -15,10 +16,14 @@ module.exports = (sequelize, DataTypes) => {
       {
         title: DataTypes.STRING,
         description: DataTypes.STRING,
-        pages: DataTypes.INTEGER,
         name: DataTypes.STRING,
         email: DataTypes.STRING,
         courseId: DataTypes.INTEGER,
+        pages: {
+          type: DataTypes.ARRAY(DataTypes.JSONB),
+          allowNull: false,
+          defaultValue: [],
+        },
       },
       {
         sequelize,
