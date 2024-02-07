@@ -16,7 +16,8 @@ module.exports = {
         type: Sequelize.STRING,
       },
       pages: {
-        type: Sequelize.INTEGER,
+        type: Sequelize.ARRAY(Sequelize.JSONB),
+        defaultValue: [],
       },
       name: {
         type: Sequelize.STRING,

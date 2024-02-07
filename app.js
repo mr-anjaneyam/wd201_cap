@@ -398,9 +398,8 @@ app.post('/designPage', async (req, res) => {
     return res.status(404).send('Chapter not found');
   }
   const updatedChapter = await chapter.update({
-    pages: [...chapter.pages,
-    { head: page, body: editorContent, completed: false }],
-  });
+    pages: chapter.pages.concat([{ head: page, body: editorContent, completed: false }]),
+  });  
 
   console.log('Chapter updated:', updatedChapter.toJSON());
 
